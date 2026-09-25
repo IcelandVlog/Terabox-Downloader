@@ -75,7 +75,7 @@ async function getFileInfo(link, cookie) {
     const logid = findBetween(text, 'dp-logid=', '&');
     const bdstoken = findBetween(text, 'bdstoken":"', '"');
 
-    if (!jsToken || !logid || !bdstoken) {
+    if (!jsToken || !logid) {
       const lower = text.toLowerCase();
       const looksLikeLogin = lower.includes('login') || lower.includes('passport') || lower.includes('captcha') || lower.includes('verify');
       const titleMatch = text.match(/<title>([^<]*)<\/title>/i);
