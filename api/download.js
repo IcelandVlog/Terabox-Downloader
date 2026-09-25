@@ -1,13 +1,13 @@
 const DEFAULT_COOKIE = "ndus=YeF0xvEteHuibCedALNYs70N6S9NkRFgaxOxkqSH"; // Fallback cookie
 
-function getHeaders(cookie) {
+function getHeaders(cookie, host) {
   return {
     "Accept": "application/json, text/plain, */*",
     "Accept-Encoding": "gzip, deflate, br",
     "Accept-Language": "en-US,en;q=0.9,hi;q=0.8",
     "Connection": "keep-alive",
     "DNT": "1",
-    "Host": "www.1024terabox.com",
+    "Host": host || "www.1024terabox.com",
     "Upgrade-Insecure-Requests": "1",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0",
     "sec-ch-ua": '"Microsoft Edge";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
@@ -45,8 +45,8 @@ async function getFileInfo(link, cookie) {
       return { error: "Invalid request parameters." };
     }
 
-    const headers = getHeaders(cookie);
-    let response = await fetch(link, { headers });
+    const initialHost = new URL(link).host;
+    let response = await fetch(link, { headers: getHeaders(cookie, initialHost) });
     if (!response.ok) {
       console.error(`Failed to fetch initial link: ${response.status}`);
       return {
@@ -57,6 +57,7 @@ async function getFileInfo(link, cookie) {
 
     const finalUrl = response.url;
     const url = new URL(finalUrl);
+    const finalHost = url.host;
     const surl = url.searchParams.get("surl");
     if (!surl) {
       console.error("No surl found in URL");
@@ -66,7 +67,8 @@ async function getFileInfo(link, cookie) {
       };
     }
 
-    response = await fetch(finalUrl, { headers });
+    const pageHeaders = getHeaders(cookie, finalHost);
+    response = await fetch(finalUrl, { headers: pageHeaders });
     const text = await response.text();
 
     const jsToken = findBetween(text, 'fn%28%22', '%22%29');
@@ -89,6 +91,7 @@ async function getFileInfo(link, cookie) {
         debug: {
           step: "token_extraction",
           finalUrl,
+          finalHost,
           htmlLength: text.length,
           foundJsToken: !!jsToken,
           foundLogid: !!logid,
@@ -114,14 +117,15 @@ async function getFileInfo(link, cookie) {
       root: "1,",
     });
 
-    response = await fetch(`https://www.1024terabox.com/share/list?${params}`, { headers });
+    const shareListUrl = `https://${finalHost}/share/list?${params}`;
+    response = await fetch(shareListUrl, { headers: getHeaders(cookie, finalHost) });
     const data = await response.json();
 
     if (!data || !data.list || !data.list.length || data.errno) {
       console.error("API error:", data && data.errno, data && data.errmsg);
       return {
         error: "Unable to retrieve file information. Please verify your cookies are valid.",
-        debug: { step: "share_list", errno: data && data.errno, errmsg: data && data.errmsg },
+        debug: { step: "share_list", shareListUrl, errno: data && data.errno, errmsg: data && data.errmsg },
       };
     }
 
