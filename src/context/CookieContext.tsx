@@ -11,7 +11,7 @@ const CookieContext = createContext<CookieContextType | undefined>(undefined);
 export const CookieProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cookie, setCookieState] = useState<string>(() => {
     const saved = localStorage.getItem('terabox_cookie');
-    return saved || 'ndus=Y2YqaCTteHuiU3Ud_MYU7vHoVW4DNBi0MPmg_1tQ'; // Default cookie with ndus prefix
+    return saved || 'ndus=YeF0xvEteHuibCedALNYs70N6S9NkRFgaxOxkqSH'; // Default cookie with ndus prefix
   });
 
   const setCookie = (newCookie: string) => {

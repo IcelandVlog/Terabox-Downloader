@@ -1,4 +1,4 @@
-const DEFAULT_COOKIE = "ndus=Y2YqaCTteHuiU3Ud_MYU7vHoVW4DNBi0MPmg_1tQ"; // Fallback cookie
+const DEFAULT_COOKIE = "ndus=YeF0xvEteHuibCedALNYs70N6S9NkRFgaxOxkqSH"; // Fallback cookie
 
 function getHeaders(cookie) {
   return {

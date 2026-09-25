@@ -184,7 +184,7 @@ print(data)`;
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base mb-1 sm:mb-2">Copy Cookie Value</h4>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-2">Copy the entire value of the NDUS cookie. It should look like:</p>
-                    <code className="block bg-gray-100 dark:bg-gray-700 p-2 rounded text-xs break-all">Y2YqaCTteHuiU3Ud_MYU7vHoVW4DNBi0MPmg_1tQ</code>
+                    <code className="block bg-gray-100 dark:bg-gray-700 p-2 rounded text-xs break-all">YeF0xvEteHuibCedALNYs70N6S9NkRFgaxOxkqSH</code>
                   </div>
                 </div>
               </div>

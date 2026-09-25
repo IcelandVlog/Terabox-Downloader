@@ -17,7 +17,7 @@ const CookieModal: React.FC<CookieModalProps> = ({ onClose }) => {
   };
 
   const handleUseDefault = () => {
-    const defaultCookie = "ndus=Y2YqaCTteHuiU3Ud_MYU7vHoVW4DNBi0MPmg_1tQ";
+    const defaultCookie = "ndus=YeF0xvEteHuibCedALNYs70N6S9NkRFgaxOxkqSH";
     setInputCookie(defaultCookie);
   };
 
