@@ -49,7 +49,10 @@ async function getFileInfo(link, cookie) {
     let response = await fetch(link, { headers });
     if (!response.ok) {
       console.error(`Failed to fetch initial link: ${response.status}`);
-      return { error: "Unable to process the request. Please check your cookies and try again." };
+      return {
+        error: "Unable to process the request. Please check your cookies and try again.",
+        debug: { step: "initial_fetch", status: response.status },
+      };
     }
 
     const finalUrl = response.url;
@@ -57,7 +60,10 @@ async function getFileInfo(link, cookie) {
     const surl = url.searchParams.get("surl");
     if (!surl) {
       console.error("No surl found in URL");
-      return { error: "Invalid link format. Please provide a valid TeraBox link." };
+      return {
+        error: "Invalid link format. Please provide a valid TeraBox link.",
+        debug: { step: "no_surl", finalUrl },
+      };
     }
 
     response = await fetch(finalUrl, { headers });
@@ -68,8 +74,28 @@ async function getFileInfo(link, cookie) {
     const bdstoken = findBetween(text, 'bdstoken":"', '"');
 
     if (!jsToken || !logid || !bdstoken) {
-      console.error("Failed to extract tokens:", { jsToken: !!jsToken, logid: !!logid, bdstoken: !!bdstoken });
-      return { error: "Authentication failed. Please check your cookies and try again." };
+      const lower = text.toLowerCase();
+      const looksLikeLogin = lower.includes('login') || lower.includes('passport') || lower.includes('captcha') || lower.includes('verify');
+      console.error("Failed to extract tokens:", {
+        jsToken: !!jsToken,
+        logid: !!logid,
+        bdstoken: !!bdstoken,
+        htmlLength: text.length,
+        finalUrl,
+        looksLikeLogin,
+      });
+      return {
+        error: "Authentication failed. Please check your cookies and try again.",
+        debug: {
+          step: "token_extraction",
+          finalUrl,
+          htmlLength: text.length,
+          foundJsToken: !!jsToken,
+          foundLogid: !!logid,
+          foundBdstoken: !!bdstoken,
+          looksLikeLoginOrCaptcha: looksLikeLogin,
+        },
+      };
     }
 
     const params = new URLSearchParams({
@@ -92,8 +118,11 @@ async function getFileInfo(link, cookie) {
     const data = await response.json();
 
     if (!data || !data.list || !data.list.length || data.errno) {
-      console.error("API error:", data.errno, data.errmsg);
-      return { error: "Unable to retrieve file information. Please verify your cookies are valid." };
+      console.error("API error:", data && data.errno, data && data.errmsg);
+      return {
+        error: "Unable to retrieve file information. Please verify your cookies are valid.",
+        debug: { step: "share_list", errno: data && data.errno, errmsg: data && data.errmsg },
+      };
     }
 
     const fileInfo = data.list[0];

@@ -6,6 +6,7 @@ interface FileInfo {
   size_bytes: number;
   proxy_url: string;
   error?: string;
+  debug?: Record<string, unknown>;
 }
 
 // TeraBox API implementation using Vercel serverless functions (/api routes)
