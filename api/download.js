@@ -21,6 +21,32 @@ function getHeaders(cookie, host) {
   };
 }
 
+// Headers for the AJAX-style /share/list call. A real browser sends this as an
+// XHR/fetch from the share page itself, with a Referer and cors-style
+// Sec-Fetch-* headers, not full-page navigation headers - without these
+// TeraBox's anti-bot check rejects the request with "need verify".
+function getApiHeaders(cookie, host, referer) {
+  return {
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "en-US,en;q=0.9,hi;q=0.8",
+    "Connection": "keep-alive",
+    "DNT": "1",
+    "Host": host || "www.1024terabox.com",
+    "Referer": referer,
+    "Origin": `https://${host}`,
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0",
+    "sec-ch-ua": '"Microsoft Edge";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
+    "X-Requested-With": "XMLHttpRequest",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-origin",
+    "Cookie": cookie || DEFAULT_COOKIE,
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"Windows"',
+  };
+}
+
 function getSize(sizeBytes) {
   if (sizeBytes >= 1024 * 1024 * 1024) {
     return `${(sizeBytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
@@ -130,13 +156,15 @@ async function getFileInfo(link, cookie) {
     });
 
     const shareListUrl = `https://${finalHost}/share/list?${params}`;
-    response = await fetch(shareListUrl, { headers: getHeaders(cookie, finalHost) });
+    response = await fetch(shareListUrl, { headers: getApiHeaders(cookie, finalHost, finalUrl) });
     const data = await response.json();
 
     if (!data || !data.list || !data.list.length || data.errno) {
       console.error("API error:", data && data.errno, data && data.errmsg);
       return {
-        error: "Unable to retrieve file information. Please verify your cookies are valid.",
+        error: data && data.errmsg === "need verify"
+          ? "TeraBox is asking for extra verification for this cookie/link. Please open the link in your browser while logged in, complete any verification shown there, then try again."
+          : "Unable to retrieve file information. Please verify your cookies are valid.",
         debug: { step: "share_list", shareListUrl, errno: data && data.errno, errmsg: data && data.errmsg },
       };
     }
