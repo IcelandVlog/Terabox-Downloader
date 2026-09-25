@@ -78,6 +78,13 @@ async function getFileInfo(link, cookie) {
     if (!jsToken || !logid || !bdstoken) {
       const lower = text.toLowerCase();
       const looksLikeLogin = lower.includes('login') || lower.includes('passport') || lower.includes('captcha') || lower.includes('verify');
+      const titleMatch = text.match(/<title>([^<]*)<\/title>/i);
+      const pageTitle = titleMatch ? titleMatch[1].trim() : null;
+      const botMarkers = [
+        'cloudflare', 'cf-turnstile', 'cf-mitigated', 'just a moment',
+        'checking your browser', 'akamai', 'px-captcha', 'perimeterx',
+        'datadome', 'are you human', 'verifying you are human', 'attention required',
+      ].filter((m) => lower.includes(m));
       console.error("Failed to extract tokens:", {
         jsToken: !!jsToken,
         logid: !!logid,
@@ -85,6 +92,8 @@ async function getFileInfo(link, cookie) {
         htmlLength: text.length,
         finalUrl,
         looksLikeLogin,
+        pageTitle,
+        botMarkers,
       });
       return {
         error: "Authentication failed. Please check your cookies and try again.",
@@ -97,6 +106,9 @@ async function getFileInfo(link, cookie) {
           foundLogid: !!logid,
           foundBdstoken: !!bdstoken,
           looksLikeLoginOrCaptcha: looksLikeLogin,
+          pageTitle,
+          botMarkers,
+          htmlSnippet: text.replace(/\s+/g, ' ').slice(0, 400),
         },
       };
     }
