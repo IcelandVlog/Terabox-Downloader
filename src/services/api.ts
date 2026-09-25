@@ -8,7 +8,7 @@ interface FileInfo {
   error?: string;
 }
 
-// Updated TeraBox API implementation using Netlify functions
+// TeraBox API implementation using Vercel serverless functions (/api routes)
 export const downloadFile = async (link: string, cookie: string): Promise<FileInfo> => {
   try {
     if (!link) {

@@ -299,7 +299,7 @@ yarn build
 - **🎭 Lucide React** - Beautiful, customizable icons
 
 ### ☁️ Backend
-- **🌐 Netlify Functions** - Serverless functions for API endpoints
+- **🌐 Vercel Serverless Functions** - API endpoints under `/api`
 - **🔄 CORS Handling** - Cross-origin request management
 - **🛡️ Proxy Integration** - External proxy service integration
 
@@ -310,30 +310,31 @@ yarn build
 - **🎯 PostCSS** - CSS processing and optimization
 
 ### 🌐 Deployment
-- **🚀 Netlify** - Hosting, CI/CD, and serverless functions
-- **🔄 GitHub Actions** - Automated deployment and testing
+- **🚀 Vercel** - Hosting, CI/CD, and serverless functions
+- **🔄 Git Integration** - Automated deployment on every push
 - **📈 Analytics** - Performance monitoring and user analytics
 
 ---
 
 ## 🌐 Deployment
 
-### 🚀 Netlify Deployment (Recommended)
+### 🚀 Vercel Deployment (Recommended)
 
-1. **Fork Repository**
-   - Click "Fork" on [GitHub](https://github.com/Itz-Ashlynn/Terabox-Web)
+1. **Push Repository to GitHub**
+   - Make sure this project (with the `api/` folder and `vercel.json`) is pushed to your GitHub repo.
 
-2. **Connect to Netlify**
-   - Login to [Netlify](https://netlify.com)
-   - Click "New site from Git"
-   - Select your forked repository
+2. **Import into Vercel**
+   - Login to [Vercel](https://vercel.com)
+   - Click "Add New..." → "Project"
+   - Import your GitHub repository
 
-3. **Configure Build Settings**
+3. **Configure Build Settings** (auto-detected from `vercel.json`)
+   - Framework preset: Vite
    - Build command: `npm run build`
-   - Publish directory: `dist`
+   - Output directory: `dist`
 
 4. **Deploy**
-   - Netlify will automatically deploy your site
+   - Click "Deploy" — Vercel will build the site and automatically deploy the functions in `api/download.js` and `api/proxy.js` as serverless endpoints (`/api/download`, `/api/proxy`)
 
 ### 📁 Manual Deployment
 

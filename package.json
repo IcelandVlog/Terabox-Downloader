@@ -17,7 +17,7 @@
     "downloader",
     "react",
     "typescript",
-    "netlify",
+    "vercel",
     "file-sharing"
   ],
   "type": "module",

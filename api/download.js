@@ -1,9 +1,9 @@
-const DEFAULT_COOKIE = "ndus=Y2YqaCTteHuiU3Ud_MYU7vHoVW4DNBi0MPmg_1tQ" // Fallback cookie
+const DEFAULT_COOKIE = "ndus=Y2YqaCTteHuiU3Ud_MYU7vHoVW4DNBi0MPmg_1tQ"; // Fallback cookie
 
 function getHeaders(cookie) {
   return {
     "Accept": "application/json, text/plain, */*",
-    "Accept-Encoding": "gzip, deflate, br", 
+    "Accept-Encoding": "gzip, deflate, br",
     "Accept-Language": "en-US,en;q=0.9,hi;q=0.8",
     "Connection": "keep-alive",
     "DNT": "1",
@@ -39,7 +39,7 @@ function findBetween(str, start, end) {
   return str.slice(startIndex, endIndex);
 }
 
-async function getFileInfo(link, event, cookie) {
+async function getFileInfo(link, cookie) {
   try {
     if (!link) {
       return { error: "Invalid request parameters." };
@@ -97,8 +97,7 @@ async function getFileInfo(link, event, cookie) {
     }
 
     const fileInfo = data.list[0];
-    const baseUrl = `https://${event.headers.host}`;
-    
+
     return {
       file_name: fileInfo.server_filename || "",
       download_link: fileInfo.dlink || "",
@@ -113,64 +112,40 @@ async function getFileInfo(link, event, cookie) {
   }
 }
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST,OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-  "Access-Control-Expose-Headers": "Content-Length"
-};
+export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Expose-Headers", "Content-Length");
 
-exports.handler = async (event, context) => {
-  // Handle CORS preflight
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers: CORS_HEADERS,
-      body: ''
-    };
+  if (req.method === "OPTIONS") {
+    res.status(200).end();
+    return;
   }
 
-  // Only handle POST requests
-  if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
-      body: JSON.stringify({ error: "Method not allowed. Use POST request." })
-    };
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "Method not allowed. Use POST request." });
+    return;
   }
 
   try {
-    const body = JSON.parse(event.body || '{}');
+    const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
     const { link, cookies } = body;
-    
+
     if (!link) {
-      return {
-        statusCode: 400,
-        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
-        body: JSON.stringify({ error: "Missing required parameter: link" })
-      };
+      res.status(400).json({ error: "Missing required parameter: link" });
+      return;
     }
 
     if (!cookies) {
-      return {
-        statusCode: 400,
-        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
-        body: JSON.stringify({ error: "Missing required parameter: cookies" })
-      };
+      res.status(400).json({ error: "Missing required parameter: cookies" });
+      return;
     }
 
-    const fileInfo = await getFileInfo(link, event, cookies);
-    return {
-      statusCode: fileInfo.error ? 400 : 200,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
-      body: JSON.stringify(fileInfo)
-    };
+    const fileInfo = await getFileInfo(link, cookies);
+    res.status(fileInfo.error ? 400 : 200).json(fileInfo);
   } catch (error) {
     console.error("Download API error:", error.message);
-    return {
-      statusCode: 500,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
-      body: JSON.stringify({ error: "Internal server error. Please try again." })
-    };
+    res.status(500).json({ error: "Internal server error. Please try again." });
   }
-};
+}
